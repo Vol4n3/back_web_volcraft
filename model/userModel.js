@@ -39,7 +39,6 @@ function filterRemove(level, rational) {
 
 function init(schema) {
     schema.statics.register = function (data, level) {
-
         data.password = crypt(data.password);
         let dbObject = new model(filterCreate(data, level));
         return dbObject.save();
