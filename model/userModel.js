@@ -111,6 +111,10 @@ function getSchema() {
         mailing: {
             type: Boolean,
             default: true
+        },
+        active: {
+            type: Boolean,
+            default:true
         }
     }
 }
