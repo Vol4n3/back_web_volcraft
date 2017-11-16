@@ -31,7 +31,7 @@ let ioInstance =new Socket(io);
 let index = require('./route/routeApi');
 app.use('/api', index);
 
-let port = process.env.PORT || 8080;
+let port = process.env.PORT || 8088;
 server.listen(port, function(){
     console.log("Express server is listening on port", port);
 });

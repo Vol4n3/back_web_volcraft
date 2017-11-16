@@ -6,7 +6,11 @@ class userController {
         return new Promise((resolve, reject) => {
             userModel.register(data, 1)
                 .then((doc) => {
+                if(doc){
                     resolve({pseudo: doc.pseudo});
+                }else{
+                    reject({msg: 'bad_register'});
+                }
                 })
                 .catch((err) => {
                     reject({msg: err});

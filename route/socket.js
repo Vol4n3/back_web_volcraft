@@ -13,15 +13,15 @@ class Socket {
         this.users[socket.id] = {
             pseudo: loginData.pseudo
         };
-        socket.emit('system', {msg: "login_success", type: "success", token: loginData.token});
+        socket.emit('sys_login', {msg: "login_success", type: "success", token: loginData.token});
     }
 
     logout(socket) {
         Session.logout(socket).then(() => {
             delete this.users[socket.id];
-            socket.emit('system', {msg: "logout_success", type: "success"});
+            socket.emit('sys_login', {msg: "logout_success", type: "success"});
         }).catch(() => {
-            socket.emit('system', {msg: "logout_error", type: "error"})
+            socket.emit('sys_login', {msg: "logout_error", type: "error"})
         });
     }
 
@@ -47,16 +47,16 @@ class Socket {
             socket.on('register', (data) => {
                 data.last_ip = socket.handshake.headers['x-forwarded-for'] || "noip";
                 User.register(data).then((doc) => {
-                    //this.login(socket, doc.pseudo);
+                    socket.emit('sys_login', {msg: "register_success", type: "success"});
                 }).catch((err) => {
-                    socket.emit('system', {msg: "register_fail", type: "error"});
+                    socket.emit('sys_login', {msg: "register_fail", type: "error"});
                 });
             });
             socket.on('login', (data) => {
                 User.login(socket, data).then((loginData) => {
                     this.login(socket, loginData);
                 }).catch((err) => {
-                    socket.emit('system', {msg: "login_fail", type: "error"});
+                    socket.emit('sys_login', {msg: "login_fail", type: "error"});
                 });
             })
         });
