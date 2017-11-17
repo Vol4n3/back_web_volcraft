@@ -1,6 +1,7 @@
 "use strict";
 let mongoose = require('mongoose');
 let crypto = require('crypto');
+let profileModel = require('./profileModel');
 
 const dbName = "user";
 
@@ -24,6 +25,7 @@ function filterCreate(data, level) {
         email: data.email,
         password: data.password,
         last_ip: data.last_ip,
+        profile: data.profile,
     }
 }
 
@@ -37,20 +39,34 @@ function filterRemove(level, rational) {
 
 }
 
-function init(schema) {
-    schema.statics.register = function (data, level) {
-        data.password = crypt(data.password);
-        let dbObject = new model(filterCreate(data, level));
-        return dbObject.save();
+function init(model) {
+    model.schema.statics.register = function (data, level) {
+        return new Promise((resolve, reject)=>{
+            profileModel.create().then((profileDoc)=>{
+                data.password = crypt(data.password);
+                data.profile = profileDoc._id;
+                console.log(profileDoc);
+                let dbObject = new model(filterCreate(data, level));
+                return dbObject.save().then((doc)=>{
+                    resolve(doc)
+                }).catch((err)=>{
+                    reject(err);
+                });
+
+            }).catch(()=>{
+
+            });
+        });
+
     };
-    schema.statics.get = function (data, level, rational, group) {
+    model.schema.statics.get = function (data, level, rational, group) {
         if (level > 1){
             return this.findById(data);
         }
         return this.findById(data)
             .select(filterShow(rational, group));
     };
-    schema.statics.login = function(data) {
+    model.schema.statics.login = function(data) {
         if (data.pseudo) {
             return this.findOne({
                 pseudo: data.pseudo,
@@ -76,10 +92,6 @@ function getSchema() {
         password: {
             type: String,
             required: true
-        },
-        group: {
-            type: String,
-            default: "default"
         },
         level: {
             type: Number,
@@ -115,12 +127,18 @@ function getSchema() {
         active: {
             type: Boolean,
             default:true
+        },
+        profile: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user'
         }
     }
 }
 
 let schema = new mongoose.Schema(getSchema());
-init(schema);
+
 let model = mongoose.model(dbName, schema);
+// todo find the probleme
+init(model);
 
 module.exports = model;

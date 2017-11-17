@@ -21,15 +21,19 @@ db.once('open', function() {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(__dirname + '/public'));
 
-
+app.use('/img',express.static(__dirname + '/public/img'));
 
 let Socket = require('./route/socket');
 let ioInstance =new Socket(io);
 
 let index = require('./route/routeApi');
 app.use('/api', index);
+
+app.all('/*', function(req, res, next) {
+    // Just send the index.html for other files to support HTML5Mode
+    res.sendFile('index.html', { root: __dirname + '/public/dist' });
+});
 
 let port = process.env.PORT || 8088;
 server.listen(port, function(){
