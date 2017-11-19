@@ -3,17 +3,22 @@ let SessionModel = require('../model/sessionModel');
 class SessionController {
     static write(socket, userData) {
         return new Promise((resolve, reject) => {
-            SessionModel.create({
-                socketId: socket.id,
-                user: userData._id
-            }).then((sessionData) => {
-                resolve({
-                    token: sessionData._id
+            SessionModel.findOneAndRemove({
+                user : userData._id
+            }).then(()=>{
+                let session = new SessionModel({
+                    socketId: socket.id,
+                    user: userData._id
                 });
-            }).catch(() => {
-                reject({
-                    msg: "cant_write_session"
-                })
+                session.save().then((sessionData) => {
+                    resolve({
+                        token: sessionData._id
+                    });
+                }).catch(() => {
+                    reject({
+                        msg: "cant_write_session"
+                    })
+                });
             });
         });
     }
@@ -40,8 +45,14 @@ class SessionController {
 
     static logout(socket) {
         return new Promise((resolve, reject) => {
-            SessionModel.logout(socket.id).then(() => {
-                resolve();
+            SessionModel.findOneAndRemove({
+                socketId: socket.id
+            }).then((doc) => {
+                if(doc){
+                    resolve();
+                }else{
+                    reject();
+                }
             }).catch(() => {
                 reject();
             });

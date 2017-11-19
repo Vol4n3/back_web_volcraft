@@ -3,19 +3,8 @@ let mongoose = require('mongoose');
 const dbName = "message";
 
 function init(schema) {
-    schema.statics.get = function(){
-        return schema.find().sort('-date').limit(50).populate({
-            path : 'user',
-            populate : {
-                path: 'profile'
-            }
-        })
-    }
+
 }
-/*pseudo: 'Vol4n3',
-    txt: 'test"qsd"',
-    img: 'http://www.aiphone.fr/images/mobile/icone_compte.png',
-    date: '2017',*/
 function getSchema() {
     return {
         user: {
@@ -29,6 +18,10 @@ function getSchema() {
             type: Date,
             default: Date.now
         },
+        chanel: {
+            type: String,
+            default: 'common'
+        }
     };
 }
 let schema = new mongoose.Schema(getSchema());

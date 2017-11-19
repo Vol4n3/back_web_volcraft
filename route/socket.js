@@ -31,9 +31,15 @@ class Socket {
 
             socket.on('session_login', (data) => {
                 Session.connect(socket, data.token).then((loginData) => {
-                    this.login(socket,loginData);
+                    this.login(socket, loginData);
                 }).catch(() => {
-                })
+                });
+            });
+            socket.on('join_chanel', (data) => {
+                socket.join(data.chanel);
+            });
+            socket.on('leave_chanel', (data) => {
+                socket.leave(data.chanel);
             });
             socket.on('chat_message', (data) => {
 
@@ -58,7 +64,7 @@ class Socket {
                 }).catch((err) => {
                     socket.emit('sys_login', {msg: "login_fail", type: "error"});
                 });
-            })
+            });
         });
     }
 }

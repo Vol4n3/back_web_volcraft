@@ -2,12 +2,6 @@
 let mongoose = require('mongoose');
 const dbName = "profile";
 
-function init(schema) {
-    schema.statics.create = function () {
-        let dbObject = new model({});
-        return dbObject.save();
-    };
-}
 function getSchema() {
     return {
         group: {
@@ -30,7 +24,7 @@ function getSchema() {
     };
 }
 let schema = new mongoose.Schema(getSchema());
-init(schema);
+
 let model = mongoose.model(dbName, schema);
 
 module.exports = model;
