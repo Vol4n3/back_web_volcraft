@@ -4,6 +4,12 @@ const dbName = "profile";
 
 function getSchema() {
     return {
+        pseudo: {
+            type: String,
+            unique: true,
+            required: true,
+            trim: true
+        },
         group: {
             type: String,
             default: "default"

@@ -2,6 +2,7 @@ let userModel = require('../model/userModel');
 let Session = require('../controller/sessionController');
 let Profile = require('../controller/profileController');
 let crypto = require('crypto');
+
 class userController {
 
     static filterRemove(level, rational) {
@@ -37,18 +38,17 @@ class userController {
     static register(data) {
         return new Promise((resolve, reject) => {
 
-            Profile.create().then((profileDoc)=>{
+            Profile.create(data.pseudo).then((profileDoc)=>{
                 data.password = this.crypt(data.password);
                 data.profile = profileDoc._id;
                 let user = new userModel(this.filterCreate(data, 1));
                 return user.save().then((doc)=>{
                     resolve(doc);
-                }).catch((err)=>{
-                    Profile.delete(profileDoc._id);
-                    reject(err);
+                }).catch(()=>{
+                    reject({msg: "user_bdd_error"});
                 });
-            }).catch((err)=>{
-                reject(err);
+            }).catch(()=>{
+                reject({msg: "profile_bdd_error"});
             });
         });
     }
@@ -64,16 +64,17 @@ class userController {
                     password: this.crypt(data.password)
                 },{
                     last_connection: new Date(),
-                }).then((userData) => {
+                    $inc : {'connection_count' : 1}
+                }).populate('profile').then((userData) => {
+                    console.log(userData);
                     if (userData) {
-                        let pseudo = userData.pseudo;
                         Session.write(socket,userData).then((sessionData) => {
                             resolve({
-                                pseudo : pseudo,
+                                user : userData,
                                 token: sessionData.token
                             });
                         }).catch(()=>{
-                            reject({msg: "error_on_create_session"})
+                            reject({msg: "session_bdd_error"})
                         });
                     } else {
                         reject({msg: "not_found"});

@@ -24,22 +24,37 @@ class SessionController {
     }
 
     static connect(socket, token) {
+        let today = new Date();
+        let yesterday = new Date().setDate(today.getDate() - 1);
         return new Promise((resolve, reject) => {
-            SessionModel.findByIdAndUpdate(token, {
+
+            SessionModel.findOneAndUpdate({
+                _id : token,
+                created_at : {
+                    $gte: yesterday,
+                    $lt: today
+                }
+            }, {
                 socketId: socket.id,
                 created_at: new Date()
-            }).populate('user').then((sessionData) => {
+            }).populate({
+                path : 'user',
+                populate : {
+                    path : 'profile'
+                }
+            }).then((sessionData) => {
                 if (sessionData) {
                     resolve({
-                        pseudo: sessionData.user.pseudo,
+                        user: sessionData.user,
                         token: sessionData._id
                     });
                 } else {
                     reject({msg: 'session_not_found'})
                 }
-            }).catch((err) => {
+            }).catch(() => {
                 reject({msg: 'session_error'})
             })
+
         });
     }
 

@@ -57,7 +57,7 @@ function getSchema() {
         },
         profile: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'user'
+            ref: 'profile'
         }
     }
 }

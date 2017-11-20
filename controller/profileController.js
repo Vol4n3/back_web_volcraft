@@ -1,9 +1,9 @@
 let profileModel = require('../model/profileModel');
 
 class profileController {
-    static create() {
+    static create(pseudo) {
         return new Promise((resolve, reject) => {
-            let profile = new profileModel({});
+            let profile = new profileModel({pseudo : pseudo});
             profile.save().then((doc) => {
                 resolve(doc);
             }).catch((err) => {
@@ -12,7 +12,7 @@ class profileController {
         });
     }
 
-    static delete(id) {
+    static remove(id) {
         return new Promise((resolve, reject) => {
             profileModel.findByIdAndRemove(id).then((doc) => {
                 resolve(doc);
