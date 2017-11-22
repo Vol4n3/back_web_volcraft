@@ -65,12 +65,13 @@ class userController {
                 },{
                     last_connection: new Date(),
                     $inc : {'connection_count' : 1}
-                }).populate('profile').then((userData) => {
-                    console.log(userData);
+                }).then((userData) => {
                     if (userData) {
                         Session.write(socket,userData).then((sessionData) => {
                             resolve({
-                                user : userData,
+                                userId : userData._id,
+                                pseudo: userData.pseudo,
+                                profileId : userData.profile,
                                 token: sessionData.token
                             });
                         }).catch(()=>{

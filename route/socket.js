@@ -1,5 +1,8 @@
+"use strict";
 let User = require('../controller/userController');
+let Profile = require('../controller/profileController');
 let Session = require('../controller/sessionController');
+let Message = require('../controller/messageController');
 
 class Socket {
     constructor(io) {
@@ -7,9 +10,9 @@ class Socket {
         this.init();
         this.users = {};
         setInterval(() => {
+            //try catch if user was deleted on ticks
             try {
                 for (let socketId in this.users) {
-                    //console.log(this.users[socketId].data);
                     this.users[socketId].attempts = 0;
                 }
             }
@@ -27,7 +30,6 @@ class Socket {
         this.addAttempt(socketId);
         return this.users[socketId].attempts < 5;
     }
-
 
 
     login(socket, loginData) {
@@ -54,9 +56,9 @@ class Socket {
             sock.emit('system', {msg: "spam"});
         };
         this.io.on('connection', (socket) => {
-            "use strict";
             this.users[socket.id] = {
                 attempts: 0,
+                channels: ['default']
             };
             socket.on('session_login', (data) => {
                 if (this.isNotSpam(socket.id)) {
@@ -69,22 +71,40 @@ class Socket {
                     sendSpamMessage(socket);
                 }
             });
-            socket.on('join_chanel', (data) => {
+            socket.on('join_channel', (data) => {
                 if (this.isNotSpam(socket.id)) {
-                    socket.join(data.chanel);
+                    socket.join(data.channel);
+                    this.users[socket.id].channels.push(data.channel);
+
                 } else {
                     sendSpamMessage(socket);
                 }
             });
-            socket.on('leave_chanel', (data) => {
+            socket.on('leave_channel', (data) => {
                 if (this.isNotSpam(socket.id)) {
-                    socket.leave(data.chanel);
+                    socket.leave(data.channel);
+                    this.users[socket.id].channels.push(data.channel);
+                    let i = this.users[socket.id].channels.indexOf(data.channel);
+                    if (i !== -1) this.users[socket.id].channels.splice(i, 1);
                 } else {
                     sendSpamMessage(socket);
                 }
             });
             socket.on('chat_message', (data) => {
+                // getProfile and make message
 
+                if (data.channel === "default") {
+                    Message.create(this.users[socket.id].userId, data);
+                }
+                let msg = Message.makeClientFormat(profile,data.text);
+                this.io.emit('chanel_message',{
+                    msg : msg,
+                    channel : data.channel
+                });
+            });
+            socket.on('private_message', (data) => {
+                //search username online and send socket
+                //socket.to(socketId)
             });
             socket.on('logout', () => {
                 this.logout(socket);

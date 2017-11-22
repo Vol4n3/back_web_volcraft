@@ -18,9 +18,9 @@ function getSchema() {
             type: Date,
             default: Date.now
         },
-        chanel: {
+        channel: {
             type: String,
-            default: 'common'
+            default: 'default'
         }
     };
 }

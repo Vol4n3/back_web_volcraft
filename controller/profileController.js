@@ -11,7 +11,19 @@ class profileController {
             })
         });
     }
-
+    static getOne(id){
+        return new Promise((resolve,reject)=>{
+            profileModel.findById(id).then((doc)=>{
+                if(doc){
+                    resolve(doc);
+                }else{
+                    reject();
+                }
+            }).catch(()=>{
+                reject();
+            })
+        });
+    }
     static remove(id) {
         return new Promise((resolve, reject) => {
             profileModel.findByIdAndRemove(id).then((doc) => {

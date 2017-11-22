@@ -37,15 +37,12 @@ class SessionController {
             }, {
                 socketId: socket.id,
                 created_at: new Date()
-            }).populate({
-                path : 'user',
-                populate : {
-                    path : 'profile'
-                }
-            }).then((sessionData) => {
+            }).populate( 'user').then((sessionData) => {
                 if (sessionData) {
                     resolve({
-                        user: sessionData.user,
+                        userId : sessionData.user._id,
+                        profileId : sessionData.user.profile,
+                        pseudo: sessionData.user.pseudo,
                         token: sessionData._id
                     });
                 } else {
