@@ -21,13 +21,20 @@ class messageController {
             })
         })
     }
-    static makeClientFormat(profile,text){
+
+    /**
+     *
+     * @param profile
+     * @param text
+     * @param {Date} date
+     */
+    static buildForClient(profile,text,date){
         return {
             pseudo: profile.pseudo,
             text: text,
-            img: 'https://www.ecosources.info/images/energie_batiment/eolienne_axe_vertical_Darri.jpg',
-            date: '2017',
-            datetime: '2017-12-25'
+            img: profile.image,
+            date: date.toDateString(),
+            datetime: date
         }
     }
     static create(userId, data) {

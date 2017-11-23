@@ -55,10 +55,10 @@ class SessionController {
         });
     }
 
-    static logout(socket) {
+    static logout(socketId) {
         return new Promise((resolve, reject) => {
             SessionModel.findOneAndRemove({
-                socketId: socket.id
+                socketId: socketId
             }).then((doc) => {
                 if(doc){
                     resolve();

@@ -12,6 +12,7 @@ class profileController {
         });
     }
     static getOne(id){
+
         return new Promise((resolve,reject)=>{
             profileModel.findById(id).then((doc)=>{
                 if(doc){

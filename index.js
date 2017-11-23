@@ -1,5 +1,5 @@
 'use strict';
-
+require('./service/helper')();
 let express = require("express");
 let app = express();
 let bodyParser = require('body-parser');
@@ -39,3 +39,5 @@ let port = process.env.PORT || 8088;
 server.listen(port, function(){
     console.log("Express server is listening on port", port);
 });
+
+
