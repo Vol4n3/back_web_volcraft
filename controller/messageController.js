@@ -31,7 +31,6 @@ class messageController {
     static buildForClient(profile,text,date){
         return {
             pseudo: profile.pseudo,
-            profileId: profile._id,
             text: text,
             img: profile.image,
             date: date.toDateString(),
