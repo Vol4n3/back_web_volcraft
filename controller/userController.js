@@ -10,10 +10,11 @@ class userController {
     }
 
     static filterShow(rational, group) {
-        if(rational === "owner" ){
+        if (rational === "owner") {
             return {}
         }
     }
+
     static filterCreate(data, level) {
         return level > 1 ? data : {
             pseudo: data.pseudo,
@@ -23,6 +24,7 @@ class userController {
             profile: data.profile,
         }
     }
+
     static filterUpdate(data, level, rational, group) {
         return level > 1 || rational === "owner" ? data : {
             email: data.email,
@@ -30,58 +32,60 @@ class userController {
             last_ip: data.last_ip,
         }
     }
+
     static crypt(data) {
         return crypto.createHmac('sha256', data)
             .update(process.env.SECRET || 'hmcdo')
             .digest('hex');
     }
+
     static register(data) {
         return new Promise((resolve, reject) => {
 
-            Profile.create(data.pseudo).then((profileDoc)=>{
+            Profile.create(data.pseudo).then((profileDoc) => {
                 data.password = this.crypt(data.password);
                 data.profile = profileDoc._id;
                 let user = new userModel(this.filterCreate(data, 1));
-                return user.save().then((doc)=>{
+                return user.save().then((doc) => {
                     resolve(doc);
-                }).catch(()=>{
+                }).catch(() => {
+                    //undo profile Register;
+                    Profile.remove(data.profile);
                     reject({msg: "user_bdd_error"});
                 });
-            }).catch(()=>{
+            }).catch(() => {
                 reject({msg: "profile_bdd_error"});
             });
         });
     }
 
-    static login(socket,data) {
+    static login(socket, data) {
         return new Promise((resolve, reject) => {
-            if(data.pseudo.length < 4){
-                reject({msg: "pseudo_not_good"});
-            }else{
-                data.last_ip = socket.handshake.headers['x-forwarded-for'] || "noip";
-                userModel.findOneAndUpdate({
-                    pseudo: data.pseudo,
-                    password: this.crypt(data.password)
-                },{
-                    last_connection: new Date(),
-                    $inc : {'connection_count' : 1}
-                }).then((userData) => {
-                    if (userData) {
-                        Session.write(socket,userData).then((sessionData) => {
-                            resolve({
-                                userId : userData._id,
-                                pseudo: userData.pseudo,
-                                profileId : userData.profile,
-                                token: sessionData.token
-                            });
-                        }).catch(()=>{
-                            reject({msg: "session_bdd_error"})
+
+            data.last_ip = socket.handshake.headers['x-forwarded-for'] || "noip";
+            userModel.findOneAndUpdate({
+                pseudo: data.pseudo,
+                password: this.crypt(data.password)
+            }, {
+                last_connection: new Date(),
+                $inc: {'connection_count': 1}
+            }).then((userData) => {
+                if (userData) {
+                    Session.write(socket, userData).then((sessionData) => {
+                        resolve({
+                            userId: userData._id,
+                            pseudo: userData.pseudo,
+                            profileId: userData.profile,
+                            token: sessionData.token
                         });
-                    } else {
-                        reject({msg: "not_found"});
-                    }
-                })
-            }
+                    }).catch(() => {
+                        reject({msg: "session_bdd_error"})
+                    });
+                } else {
+                    reject({msg: "not_found"});
+                }
+            })
+
         })
     }
 }

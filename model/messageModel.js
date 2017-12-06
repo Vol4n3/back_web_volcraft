@@ -13,6 +13,7 @@ function getSchema() {
         },
         text: {
             type: String,
+            maxlength : 320
         },
         created_at: {
             type: Date,

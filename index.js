@@ -3,7 +3,15 @@ require('./service/helper')();
 let express = require("express");
 let app = express();
 let bodyParser = require('body-parser');
-
+/**
+ * todo:Remove this on prod
+ */
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 let http = require('http');
 let server = http.createServer(app);
 
@@ -27,8 +35,8 @@ app.use('/img',express.static(__dirname + '/public/img'));
 let Socket = require('./route/socket');
 let ioInstance =new Socket(io);
 
-let index = require('./route/routeApi');
-app.use('/api', index);
+let profileRoute = require('./route/profileRoute');
+app.use('/api/profile', profileRoute);
 
 app.all('/test', function(req, res, next) {
     // Just send the index.html for other files to support HTML5Mode

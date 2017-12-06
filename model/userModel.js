@@ -9,12 +9,15 @@ function getSchema() {
             type: String,
             unique: true,
             required: true,
-            trim: true
+            trim: true,
+            minlength: 2,
+            maxlength: 16
         },
         email: {
             type: String,
             unique: true,
-            sparse: true
+            sparse: true,
+            maxlength: 255
         },
         password: {
             type: String,

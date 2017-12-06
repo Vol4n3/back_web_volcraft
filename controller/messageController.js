@@ -5,7 +5,7 @@ class messageController {
         return new Promise((resolve, reject) => {
             messageModel.find({
                 channel: channel
-            }).sort('-date').limit(50).populate({
+            }).limit(50).sort('-date').populate({
                 path: 'user',
                 populate: {
                     path: 'profile'
@@ -31,6 +31,7 @@ class messageController {
     static buildForClient(profile,text,date){
         return {
             pseudo: profile.pseudo,
+            profileId: profile._id,
             text: text,
             img: profile.image,
             date: date.toDateString(),

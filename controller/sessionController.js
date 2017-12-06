@@ -23,21 +23,21 @@ class SessionController {
         });
     }
 
-    static connect(socket, token) {
+    static connect(token,socket) {
         let today = new Date();
         let yesterday = new Date().setDate(today.getDate() - 1);
+        let updateData = {
+            created_at: new Date()
+        };
+        if(socket) updateData['socketId'] = socket.id;
         return new Promise((resolve, reject) => {
-
             SessionModel.findOneAndUpdate({
                 _id : token,
                 created_at : {
                     $gte: yesterday,
                     $lt: today
                 }
-            }, {
-                socketId: socket.id,
-                created_at: new Date()
-            }).populate( 'user').then((sessionData) => {
+            }, updateData).populate( 'user').then((sessionData) => {
                 if (sessionData) {
                     resolve({
                         userId : sessionData.user._id,

@@ -78,7 +78,7 @@ class Socket {
 
             socket.on('session_login', (data) => {
                 if (this.isNotSpam(socket.id)) {
-                    Session.connect(socket, data.token).then((loginData) => {
+                    Session.connect(data.token, socket).then((loginData) => {
                         this.login(socket, loginData);
                     }).catch(() => {
                         socket.emit('sys_login', {msg: "login_fail", type: "error"});

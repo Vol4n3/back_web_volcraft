@@ -6,9 +6,10 @@ function getSchema() {
     return {
         pseudo: {
             type: String,
-            unique: true,
             required: true,
-            trim: true
+            trim: true,
+            minlength: 2,
+            maxlength: 16
         },
         group: {
             type: String,
@@ -16,16 +17,19 @@ function getSchema() {
         },
         image: {
             type: String,
-            default: "/img/profil.png"
+            default: "/img/profil.png",
+            maxlength: 2048
         },
         birthday: {
             type: Date
         },
         motd:{
-            type: String
+            type: String,
+            maxlength: 255
         },
         description:{
-            type: String
+            type: String,
+            maxlength: 2048
         }
     };
 }
