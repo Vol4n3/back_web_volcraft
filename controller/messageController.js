@@ -3,15 +3,17 @@ let messageModel = require('../model/messageModel');
 class messageController {
     static getLastest(channel) {
         return new Promise((resolve, reject) => {
+
             messageModel.find({
                 channel: channel
-            }).sort('-date').populate({
+            }).limit(50).sort({created_at : -1}).populate({
                 path: 'user',
                 populate: {
                     path: 'profile'
                 }
             }).then((doc) => {
                 if (doc) {
+                    doc.reverse();
                     resolve(doc);
                 } else {
                     reject({msg: "not_messages"});
@@ -28,15 +30,17 @@ class messageController {
      * @param text
      * @param {Date} date
      */
-    static buildForClient(profile,text,date){
+    static buildForClient(profile, text, date) {
         return {
             pseudo: profile.pseudo,
             text: text,
             img: profile.image,
+            profileId: profile._id,
             date: date.toDateString(),
             datetime: date
         }
     }
+
     static create(userId, data) {
         return new Promise((resolve, reject) => {
             let message = new messageModel({
@@ -47,7 +51,7 @@ class messageController {
             message.save().then(() => {
                 resolve();
             }).catch(() => {
-               reject();
+                reject();
             })
         });
     }

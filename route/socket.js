@@ -72,6 +72,7 @@ class Socket {
                     channel: 'default',
                     messages: messages
                 });
+
             }).catch(() => {
 
             });
@@ -118,6 +119,8 @@ class Socket {
                             message: msg,
                             channel: data.channel
                         });
+                    }).catch((err)=>{
+                        //console.log(err);
                     });
                 } else {
                     socket.emit('sys_login', {msg: "login_fail", type: "error"});

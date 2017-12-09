@@ -31,10 +31,14 @@ class profileController {
         return new Promise((resolve, reject) => {
             profileModel.findById(id).then((doc) => {
                 if (doc) {
+                    let date;
+                    if(doc.birthday){
+                        date = doc.birthday.toISOString().slice(0, -14);
+                    }
                     resolve({
                         _id: doc._id,
                         pseudo: doc.pseudo,
-                        birthday: doc.birthday.toISOString().slice(0, -14),
+                        birthday: date,
                         description: doc.description,
                         image: doc.image,
                         group: doc.group,
@@ -43,8 +47,8 @@ class profileController {
                 } else {
                     reject();
                 }
-            }).catch(() => {
-                reject();
+            }).catch((err) => {
+                reject(err);
             })
         });
     }
