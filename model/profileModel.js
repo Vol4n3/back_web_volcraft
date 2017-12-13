@@ -7,6 +7,7 @@ function getSchema() {
         pseudo: {
             type: String,
             required: true,
+            unique: true,
             trim: true,
             minlength: 2,
             maxlength: 16

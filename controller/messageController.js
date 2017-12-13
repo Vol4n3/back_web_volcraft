@@ -6,7 +6,7 @@ class messageController {
 
             messageModel.find({
                 channel: channel
-            }).limit(50).sort({created_at : -1}).populate({
+            }).limit(50).sort({created_at: -1}).populate({
                 path: 'user',
                 populate: {
                     path: 'profile'
@@ -39,6 +39,25 @@ class messageController {
             date: date.toDateString(),
             datetime: date
         }
+    }
+
+    static analyse(msg) {
+        const reg_giphy = /^\/giphy\s?(\S*)?/i;
+        const reg_notify = /@(\S*)/ig;
+        const reg_private_msg = /^@(\S*)/i.exec(msg);
+        if(reg_private_msg){
+            msg.replace(reg_private_msg[0],'');
+            return {
+                text : msg,
+                data : reg_private_msg[1],
+                type: 'private_message'
+            }
+        }
+        return {
+            text : msg,
+            type: "global",
+            data : "pseudo"
+        };
     }
 
     static create(userId, data) {

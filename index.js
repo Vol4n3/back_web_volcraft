@@ -32,6 +32,7 @@ app.use('/api/profile', profileRoute);
 
 app.all('/home', function(req, res) {res.sendFile('index.html', { root: __dirname + '/public/dist' });});
 app.all('/profile', function(req, res) {res.sendFile('index.html', { root: __dirname + '/public/dist' });});
+app.all('/community', function(req, res) {res.sendFile('index.html', { root: __dirname + '/public/dist' });});
 
 app.use(express.static(__dirname + '/public/dist'));
 

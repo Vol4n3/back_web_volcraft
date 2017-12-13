@@ -3,6 +3,7 @@ let User = require('../controller/userController');
 let Profile = require('../controller/profileController');
 let Session = require('../controller/sessionController');
 let Message = require('../controller/messageController');
+let http = require('http');
 
 class Socket {
     constructor(io) {
@@ -22,9 +23,62 @@ class Socket {
         }, 5000)
     }
 
+    getSocketIdByProfile(profileId) {
+        for (let socketId in this.users) {
+            if (this.users[socketId].data) {
+                if (this.users[socketId].data.profileId.equals(profileId)) {
+                    return socketId;
+                }
+            }
+        }
+        return null;
+    }
+
     addAttempt(socketId) {
         this.users[socketId].attempts++;
         if (this.users[socketId].attempts > 20) this.io.sockets.connected[socketId].disconnect();
+    }
+
+    buildMessage(socket, data, profileData) {
+        let msg;
+        let analyseText = Message.analyse(data.text);
+        switch (analyseText.type) {
+            case 'private_message':
+                // todo: WIP
+                Profile.findByPseudo(analyseText.data).then((doc) => {
+                    const target = this.getSocketIdByProfile(doc._id);
+                    if (target) {
+                        msg = Message.buildForClient(profileData, analyseText.text, new Date());
+                        this.io.to(target).emit('private_message', {
+                            from: profileData.pseudo,
+                            message: msg
+                        });
+                        socket.emit('private_message', {
+                            from: doc.pseudo,
+                            message: msg
+                        })
+                    } else {
+
+                    }
+                }).catch(() => {
+                    //non trouvable
+                });
+                break;
+            case 'command_random_gif':
+                break;
+            case 'command_url':
+                break;
+            default:
+                if (data.channel === "default") {
+                    Message.create(this.users[socket.id].data.userId, data);
+                }
+                msg = Message.buildForClient(profileData, data.text, new Date());
+                this.io.in(data.channel).emit('chanel_message', {
+                    message: msg,
+                    channel: data.channel
+                });
+                break;
+        }
     }
 
     isNotSpam(socketId) {
@@ -32,6 +86,20 @@ class Socket {
         return this.users[socketId].attempts < 5;
     }
 
+    sendConnected() {
+        setTimeout(() => {
+            let connected = [];
+            for (let socketId in this.users) {
+                if (this.users[socketId].data) {
+                    connected.push({
+                        profile: this.users[socketId].data.profileId,
+                        pseudo: this.users[socketId].data.pseudo
+                    })
+                }
+            }
+            this.io.emit('connected', connected);
+        }, 1000);
+    }
 
     login(socket, loginData) {
         for (let u in this.users) {
@@ -42,6 +110,7 @@ class Socket {
         }
         this.users[socket.id].data = loginData;
         socket.emit('sys_login', {msg: "login_success", type: "success", token: loginData.token});
+        this.sendConnected();
     }
 
     logout(socketId) {
@@ -51,6 +120,7 @@ class Socket {
         }).catch(() => {
             this.io.sockets.connected[socketId].emit('sys_login', {msg: "logout_error", type: "error"})
         });
+        this.sendConnected();
     }
 
     init() {
@@ -62,6 +132,7 @@ class Socket {
                 attempts: 0,
                 channels: ['default']
             };
+            socket.join('default');
             Message.getLastest('default').then((docs) => {
                 let messages = [];
                 for (let doc of docs) {
@@ -106,29 +177,21 @@ class Socket {
                 }
             });
             socket.on('chat_message', (data) => {
-                // getProfile and make message
-                let profileId = (this.users[socket.id].data) ? this.users[socket.id].data.profileId : null;
-                if (profileId) {
-                    Profile.getOne(profileId).then((profileData) => {
-                        let today = new Date();
-                        if (data.channel === "default") {
-                            Message.create(this.users[socket.id].data.userId, data);
-                        }
-                        let msg = Message.buildForClient(profileData, data.text, today);
-                        this.io.emit('chanel_message', {
-                            message: msg,
-                            channel: data.channel
+                if (this.isNotSpam(socket.id)) {
+                    // getProfile and make message
+                    let profileId = (this.users[socket.id].data) ? this.users[socket.id].data.profileId : null;
+                    if (profileId) {
+                        Profile.getOne(profileId).then((profileData) => {
+                            this.buildMessage(socket, data, profileData);
+                        }).catch((err) => {
+                            //console.log(err);
                         });
-                    }).catch((err)=>{
-                        //console.log(err);
-                    });
+                    } else {
+                        socket.emit('sys_login', {msg: "login_fail", type: "error"});
+                    }
                 } else {
-                    socket.emit('sys_login', {msg: "login_fail", type: "error"});
+                    sendSpamMessage(socket);
                 }
-            });
-            socket.on('private_message', (data) => {
-                //search username online and send socket
-                //socket.to(socketId)
             });
             socket.on('logout', () => {
                 this.logout(socket.id);
