@@ -187,7 +187,8 @@ class Socket {
                             //console.log(err);
                         });
                     } else {
-                        socket.emit('sys_login', {msg: "login_fail", type: "error"});
+                        let now = new Date();
+                        socket.emit('sys_chat', {msg: "not_logged", type: "error", date: now.toISOString()});
                     }
                 } else {
                     sendSpamMessage(socket);
